@@ -98,12 +98,12 @@
             </button>
             <div class="text-center mb-6 mt-4">
                 <h2 class="text-2xl font-bold text-gray-900">Portal Siswa</h2>
-                <p class="text-sm text-gray-500">Masukkan NIS dan PIN yang diberikan oleh Guru</p>
+                <p class="text-sm text-gray-500">Masukkan NISN dan PIN yang diberikan oleh Guru</p>
             </div>
             <form id="form-login-siswa" onsubmit="handleSiswaLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">NIS (Nomor Induk Siswa)</label>
-                    <input type="text" id="login-nis" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="Contoh: 12345">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">NISN (Nomor Induk Siswa Nasional)</label>
+                    <input type="text" id="login-nisn" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="Contoh: 0012345678">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">PIN Rahasia (6 Digit)</label>
@@ -184,7 +184,7 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-gray-50 text-gray-600 text-sm border-b border-gray-200">
-                                <th class="py-3 px-4 font-semibold">NIS / NISN</th>
+                                <th class="py-3 px-4 font-semibold">NISN / NIS</th>
                                 <th class="py-3 px-4 font-semibold">Nama Siswa</th>
                                 <th class="py-3 px-4 font-semibold">Status</th>
                                 <th class="py-3 px-4 font-semibold">PIN Akses</th>
@@ -231,8 +231,8 @@
                     <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">A. Identitas Pribadi</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                         <div><label class="block text-xs font-medium text-gray-500 mb-1">Nama Lengkap</label><input type="text" id="s_nama" required class="w-full p-2 border rounded focus:ring-1 focus:ring-emerald-500 bg-gray-50" readonly></div>
-                        <div><label class="block text-xs font-medium text-gray-500 mb-1">NIS (Nomor Induk Siswa)</label><input type="text" id="s_nis" class="w-full p-2 border rounded bg-gray-100" readonly></div>
-                        <div><label class="block text-xs font-medium text-gray-500 mb-1">NISN</label><input type="text" id="s_nisn" class="w-full p-2 border rounded focus:ring-1 focus:ring-emerald-500"></div>
+                        <div><label class="block text-xs font-medium text-gray-500 mb-1">NISN (Nomor Induk Siswa Nasional)</label><input type="text" id="s_nisn" class="w-full p-2 border rounded bg-gray-100" readonly></div>
+                        <div><label class="block text-xs font-medium text-gray-500 mb-1">NIS (Nomor Induk Sekolah)</label><input type="text" id="s_nis" class="w-full p-2 border rounded focus:ring-1 focus:ring-emerald-500"></div>
                         <div><label class="block text-xs font-medium text-gray-500 mb-1">Jenis Kelamin</label>
                             <select id="s_jk" class="w-full p-2 border rounded focus:ring-1 focus:ring-emerald-500">
                                 <option value="L">Laki-laki (L)</option>
@@ -325,8 +325,8 @@
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">NIS (Wajib, untuk login siswa)</label>
-                            <input type="text" id="form-nis" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">NISN (Wajib, untuk login siswa)</label>
+                            <input type="text" id="form-nisn" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
@@ -340,7 +340,7 @@
                             </select>
                         </div>
                         <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 text-sm text-blue-800">
-                            <strong>Info:</strong> Setelah disimpan, sistem akan men-generate <b>PIN 6-digit</b> secara otomatis. Berikan NIS dan PIN tersebut kepada siswa agar mereka bisa melengkapi biodata 26 kolom secara mandiri.
+                            <strong>Info:</strong> Setelah disimpan, sistem akan men-generate <b>PIN 6-digit</b> secara otomatis. Berikan NISN dan PIN tersebut kepada siswa agar mereka bisa melengkapi biodata 26 kolom secara mandiri.
                         </div>
                     </div>
                     
@@ -386,7 +386,7 @@
         <h3 style="font-size: 12pt; border-bottom: 1px solid black; padding-bottom: 3px; margin-top:0;">A. IDENTITAS PRIBADI</h3>
         <table class="print-table">
             <tr><td width="30%">1. Nama Lengkap</td><td width="2%">:</td><td id="p_nama"></td></tr>
-            <tr><td>2. NIS / NISN</td><td>:</td><td id="p_nis_nisn"></td></tr>
+            <tr><td>2. NISN / NIS</td><td>:</td><td id="p_nis_nisn"></td></tr>
             <tr><td>3. Tempat, Tanggal Lahir</td><td>:</td><td id="p_ttl"></td></tr>
             <tr><td>4. Jenis Kelamin / Gol. Darah</td><td>:</td><td id="p_jk_gol"></td></tr>
             <tr><td>5. Agama</td><td>:</td><td id="p_agama"></td></tr>
@@ -558,7 +558,7 @@
             document.getElementById('view-siswa-login').classList.add('hidden');
             document.getElementById('view-login').classList.remove('hidden');
             
-            document.getElementById('login-nis').value = '';
+            document.getElementById('login-nisn').value = '';
             document.getElementById('login-pin').value = '';
         }
 
@@ -619,8 +619,8 @@
                 tr.className = 'hover:bg-gray-50 transition';
                 tr.innerHTML = `
                     <td class="py-3 px-4">
-                        <div class="font-medium text-gray-800">${s.nis || '-'}</div>
-                        <div class="text-xs text-gray-500">${s.nisn || '-'}</div>
+                        <div class="font-medium text-gray-800">${s.nisn || '-'}</div>
+                        <div class="text-xs text-gray-500">${s.nis || '-'}</div>
                     </td>
                     <td class="py-3 px-4 font-medium text-gray-800">${s.nama || '-'}</td>
                     <td class="py-3 px-4">
@@ -640,7 +640,7 @@
         // Modal Form Siswa (Guru)
         window.openFormModal = function() {
             document.getElementById('form-id').value = '';
-            document.getElementById('form-nis').value = '';
+            document.getElementById('form-nisn').value = '';
             document.getElementById('form-nama').value = '';
             document.getElementById('form-status').value = 'Wali Kelas';
             document.getElementById('form-pin').value = '';
@@ -662,7 +662,7 @@
             btn.innerHTML = 'Menyimpan...';
 
             const id = document.getElementById('form-id').value;
-            const nis = document.getElementById('form-nis').value.trim();
+            const nisn = document.getElementById('form-nisn').value.trim();
             const nama = document.getElementById('form-nama').value.trim();
             const status = document.getElementById('form-status').value;
             let pin = document.getElementById('form-pin').value;
@@ -673,7 +673,7 @@
             }
 
             const data = { 
-                nis, nama, status, pin, 
+                nisn, nama, status, pin, 
                 updatedAt: new Date().toISOString()
             };
             
@@ -686,9 +686,9 @@
                     await updateDoc(doc(ref, id), data);
                     showToast("Siswa diperbarui");
                 } else {
-                    // Cek NIS duplikat lokal
-                    if(allStudents.find(s => s.nis === nis)) {
-                        showToast("NIS sudah terdaftar!", "error");
+                    // Cek NISN duplikat lokal
+                    if(allStudents.find(s => s.nisn === nisn)) {
+                        showToast("NISN sudah terdaftar!", "error");
                         btn.disabled = false; btn.innerHTML = 'Simpan & Buat PIN';
                         return;
                     }
@@ -799,7 +799,7 @@
             const btn = document.getElementById('btn-login-siswa');
             btn.innerHTML = 'Memeriksa...'; btn.disabled = true;
 
-            const nis = document.getElementById('login-nis').value.trim();
+            const nisn = document.getElementById('login-nisn').value.trim();
             const pin = document.getElementById('login-pin').value.trim();
 
             if(!auth.currentUser) {
@@ -816,7 +816,7 @@
                 let foundStudent = null;
                 snap.forEach(d => {
                     const s = d.data();
-                    if(s.nis === nis && s.pin === pin) {
+                    if(s.nisn === nisn && s.pin === pin) {
                         s.id = d.id;
                         foundStudent = s;
                     }
@@ -830,7 +830,7 @@
                     populateSiswaForm(foundStudent);
                     showToast(`Selamat datang, ${foundStudent.nama}`);
                 } else {
-                    showToast("NIS atau PIN Salah!", "error");
+                    showToast("NISN atau PIN Salah!", "error");
                 }
             } catch(error) {
                 console.error(error);
@@ -841,8 +841,8 @@
 
         function populateSiswaForm(s) {
             document.getElementById('s_nama').value = s.nama || '';
-            document.getElementById('s_nis').value = s.nis || '';
             document.getElementById('s_nisn').value = s.nisn || '';
+            document.getElementById('s_nis').value = s.nis || '';
             document.getElementById('s_jk').value = s.jk || 'L';
             document.getElementById('s_tmp_lahir').value = s.tmp_lahir || '';
             document.getElementById('s_tgl_lahir').value = s.tgl_lahir || '';
@@ -881,7 +881,7 @@
             btn.disabled = true; btn.innerHTML = 'Menyimpan...';
 
             const updatedData = {
-                nisn: document.getElementById('s_nisn').value,
+                nis: document.getElementById('s_nis').value,
                 jk: document.getElementById('s_jk').value,
                 tmp_lahir: document.getElementById('s_tmp_lahir').value,
                 tgl_lahir: document.getElementById('s_tgl_lahir').value,
@@ -943,32 +943,32 @@
 
                 // Assume row 0 is header. Very simple mapping matching requested column names (rough match)
                 const headers = json[0].map(h => String(h).toLowerCase().trim());
-                const nisIdx = headers.findIndex(h => h.includes('nis') && !h.includes('nisn'));
+                const nisnIdx = headers.findIndex(h => h.includes('nisn'));
                 const namaIdx = headers.findIndex(h => h.includes('nama'));
                 const statusIdx = headers.findIndex(h => h.includes('status')); // Optional
                 
-                if(nisIdx === -1 || namaIdx === -1) {
-                    showToast("Gagal Import: Kolom 'NIS' dan 'Nama' wajib ada di baris pertama Excel.", "error");
+                if(nisnIdx === -1 || namaIdx === -1) {
+                    showToast("Gagal Import: Kolom 'NISN' dan 'Nama' wajib ada di baris pertama Excel.", "error");
                     return;
                 }
 
                 let count = 0;
                 for(let i=1; i<json.length; i++) {
                     const row = json[i];
-                    if(!row || row.length === 0 || !row[nisIdx]) continue;
+                    if(!row || row.length === 0 || !row[nisnIdx]) continue;
                     
-                    const nis = String(row[nisIdx]).trim();
+                    const nisn = String(row[nisnIdx]).trim();
                     const nama = String(row[namaIdx]).trim();
                     const status = (statusIdx !== -1 && row[statusIdx]) ? String(row[statusIdx]).trim() : 'Wali Kelas';
                     
-                    // Skip if nis already exists locally
-                    if(allStudents.find(s => s.nis === nis)) continue;
+                    // Skip if nisn already exists locally
+                    if(allStudents.find(s => s.nisn === nisn)) continue;
 
                     const pin = Math.floor(100000 + Math.random() * 900000).toString();
                     
                     try {
                         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'students'), {
-                            nis, nama, status: status === 'Bimbingan' ? 'Bimbingan' : 'Wali Kelas', pin,
+                            nisn, nama, status: status === 'Bimbingan' ? 'Bimbingan' : 'Wali Kelas', pin,
                             // (We could map other 24 fields here if needed based on header index, but for simplicity, let students fill it)
                         });
                         count++;
@@ -1000,7 +1000,7 @@
 
             // Populate Print Template
             document.getElementById('p_nama').innerText = s.nama || '-';
-            document.getElementById('p_nis_nisn').innerText = `${s.nis || '-'} / ${s.nisn || '-'}`;
+            document.getElementById('p_nis_nisn').innerText = `${s.nisn || '-'} / ${s.nis || '-'}`;
             document.getElementById('p_ttl').innerText = `${s.tmp_lahir || '-'}, ${s.tgl_lahir || '-'}`;
             document.getElementById('p_jk_gol').innerText = `${s.jk === 'P' ? 'Perempuan' : (s.jk === 'L' ? 'Laki-Laki' : '-')} / ${s.gol_darah || '-'}`;
             document.getElementById('p_agama').innerText = s.agama || '-';
