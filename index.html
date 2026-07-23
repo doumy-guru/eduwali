@@ -276,13 +276,12 @@
     <script>
         // --- 1. FIREBASE CONFIGURATION ---
         const firebaseConfig = {
-           apiKey: "AIzaSyBzmqSgEL3a5bFSkRBUjGp-SZ4J3fk-ZwU",
-  authDomain: "eduwali.firebaseapp.com",
-  projectId: "eduwali",
-  storageBucket: "eduwali.firebasestorage.app",
-  messagingSenderId: "218381600621",
-  appId: "1:218381600621:web:ba891d7fe67fd89f767c64",
-  measurementId: "G-7RS4EV0YV0"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
         if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
@@ -341,7 +340,7 @@
         let currentFilterKategori = 'wali';
         let cacheDataSiswa = [];
 
-        // --- 2. EVENT LISTENER & SWITCH LOGIN ---
+        // --- 2. EVENT LISTENER & AUTO-PERSISTENCE SESSION ---
         window.addEventListener('DOMContentLoaded', () => {
             const guruPass = document.getElementById('guru-password');
             if (guruPass) {
@@ -356,7 +355,38 @@
                     if (e.key === 'Enter') { e.preventDefault(); loginSiswa(); }
                 });
             }
+
+            // PERIKSA SESI PERSISTEN
+            cekSesiLogin();
         });
+
+        function cekSesiLogin() {
+            const savedSession = localStorage.getItem('eduwali_session');
+            if (!savedSession) return;
+
+            try {
+                const session = JSON.parse(savedSession);
+
+                if (session.role === 'guru') {
+                    document.getElementById('login-page').classList.add('hidden');
+                    document.getElementById('guru-dashboard').classList.remove('hidden');
+
+                    loadDataSiswaGuru();
+                    loadSemuaKasusGuru();
+                } else if (session.role === 'siswa') {
+                    document.getElementById('login-page').classList.add('hidden');
+                    document.getElementById('siswa-dashboard').classList.remove('hidden');
+
+                    if (session.data) {
+                        renderPortalSiswa(session.data);
+                        loadKasusSiswaDetail(session.data.id);
+                    }
+                }
+            } catch (err) {
+                console.error("Sesi tidak valid:", err);
+                localStorage.removeItem('eduwali_session');
+            }
+        }
 
         function switchLoginTab(role) {
             const tabGuru = document.getElementById('tab-login-guru');
@@ -377,7 +407,7 @@
             }
         }
 
-        // --- 3. LOGIN & LOGOUT ---
+        // --- 3. LOGIN & LOGOUT DENGAN LOCALSTORAGE ---
         async function loginGuru() {
             const email = document.getElementById('guru-email').value.trim();
             const pass = document.getElementById('guru-password').value.trim();
@@ -391,6 +421,11 @@
                     await firebase.auth().signInWithEmailAndPassword(email, pass);
                 }
                 Swal.close();
+
+                // Simpan Sesi Login Guru
+                const sessionGuru = { role: 'guru', email: email };
+                localStorage.setItem('eduwali_session', JSON.stringify(sessionGuru));
+
                 document.getElementById('login-page').classList.add('hidden');
                 document.getElementById('guru-dashboard').classList.remove('hidden');
 
@@ -425,6 +460,10 @@
 
                 if (!sData) return showToast("Data NISN tersebut tidak ditemukan", "error");
 
+                // Simpan Sesi Login Siswa
+                const sessionSiswa = { role: 'siswa', nisn: nisn, data: sData };
+                localStorage.setItem('eduwali_session', JSON.stringify(sessionSiswa));
+
                 document.getElementById('login-page').classList.add('hidden');
                 document.getElementById('siswa-dashboard').classList.remove('hidden');
 
@@ -442,6 +481,10 @@
             if (firebase.apps.length && firebase.auth().currentUser) {
                 firebase.auth().signOut();
             }
+
+            // Hapus Sesi dari LocalStorage
+            localStorage.removeItem('eduwali_session');
+
             document.getElementById('guru-dashboard').classList.add('hidden');
             document.getElementById('siswa-dashboard').classList.add('hidden');
             document.getElementById('login-page').classList.remove('hidden');
@@ -497,7 +540,6 @@
                 return katArray.includes(currentFilterKategori);
             });
 
-            // Reset Select All Checkbox saat re-render
             const chkAll = document.getElementById('check-select-all');
             if (chkAll) chkAll.checked = false;
             updateSelectedCount();
@@ -553,7 +595,7 @@
             });
         }
 
-        // --- 5. HAPUS & CENTANG SEKALIGUS (BULK ACTIONS) ---
+        // --- 5. HAPUS & CENTANG SEKALIGUS ---
         function toggleSelectAll(masterCheckbox) {
             const rowCheckboxes = document.querySelectorAll('.row-siswa-checkbox');
             rowCheckboxes.forEach(cb => cb.checked = masterCheckbox.checked);
@@ -561,7 +603,6 @@
         }
 
         function updateSelectedCount() {
-            const rowCheckboxes = document.querySelectorAll('.row-siswa-checkbox');
             const checkedBoxes = document.querySelectorAll('.row-siswa-checkbox:checked');
             const btnBulkDelete = document.getElementById('btn-bulk-delete');
             const textBtnBulk = document.getElementById('text-btn-bulk');
@@ -593,7 +634,6 @@
 
             if (!res.isConfirmed) return;
 
-            // Hapus dari Firebase
             if (firebase.apps.length) {
                 try {
                     await getSiswaRef().doc(String(id)).delete();
@@ -602,9 +642,7 @@
                 }
             }
 
-            // Hapus dari cache lokal
             cacheDataSiswa = cacheDataSiswa.filter(s => String(s.id) !== String(id));
-            
             showToast(`Data ${nama} berhasil dihapus!`);
             renderSiswaByKategori();
             populateDropdownSiswaKasus();
@@ -640,12 +678,10 @@
                     await batch.commit();
                 }
 
-                // Update Cache Lokal
                 cacheDataSiswa = cacheDataSiswa.filter(s => !selectedIds.includes(String(s.id)));
 
                 Swal.close();
                 showToast(`Berhasil menghapus ${selectedIds.length} data siswa!`);
-                
                 renderSiswaByKategori();
                 populateDropdownSiswaKasus();
 
@@ -681,7 +717,6 @@
             document.getElementById('modal-detail-siswa').classList.add('hidden');
         }
 
-        // Dropdown Target Siswa untuk Modal Tambah Kasus
         function populateDropdownSiswaKasus() {
             const selectEl = document.getElementById('kasus-siswa-id');
             if (!selectEl) return;
@@ -748,7 +783,6 @@
                         importedList.push(dataSiswa);
                     });
 
-                    // Simpan ke Firebase jika aktif
                     if (firebase.apps.length) {
                         const batch = firebase.firestore().batch();
                         importedList.forEach(s => {
@@ -758,7 +792,6 @@
                         await batch.commit();
                     }
 
-                    // Perbarui Local Cache
                     importedList.forEach(s => {
                         const existingIdx = cacheDataSiswa.findIndex(item => String(item.nisn) === String(s.nisn));
                         if (existingIdx >= 0) cacheDataSiswa[existingIdx] = s;
@@ -814,7 +847,6 @@
                     }
                 }
 
-                // Update lokal poin siswa
                 const sIdx = cacheDataSiswa.findIndex(s => String(s.id) === String(siswaId));
                 if (sIdx >= 0 && poin > 0) {
                     cacheDataSiswa[sIdx].poin = (cacheDataSiswa[sIdx].poin || 0) + poin;
