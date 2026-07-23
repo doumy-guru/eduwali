@@ -757,24 +757,24 @@
             }
         }
 
-        async function loginGuru() {
-            const email = document.getElementById('login_email_guru').value;
-            const pass = document.getElementById('login_pass_guru').value;
-            const btn = document.getElementById('btn-login-guru');
-            
-            if(!email || !pass) return showToast('Email dan Password wajib diisi', 'error');
-            btn.innerHTML = 'Memeriksa...'; btn.disabled = true;
-
-            // Simple hardcoded login for demo
-            if (email === 'guru@sekolah.com' && pass === 'guru123' || email.includes('guru')) {
-                localStorage.setItem('eduwali_role', 'guru');
-                checkPersistentLogin();
-                btn.innerHTML = 'Masuk Dashboard'; btn.disabled = false;
-            } else {
-                Swal.fire('Akses Ditolak', 'Gunakan sembarang email mengandung kata "guru" untuk demo', 'error');
-                btn.innerHTML = 'Masuk Dashboard'; btn.disabled = false;
-            }
+      async function loginDenganEmail(email, password) {
+    try {
+        // Otentikasi ke Firebase
+        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        // Ambil data profil dari Firestore berdasarkan UID atau Email
+        const doc = await getSiswaRef().doc(user.uid).get();
+        
+        if (doc.exists) {
+            setupSiswaDashboard(doc.id, doc.data());
+        } else {
+            showToast("Data akun tidak ditemukan di database", "error");
         }
+    } catch (error) {
+        showToast("Login gagal: " + error.message, "error");
+    }
+}
 
         async function loginSiswa() {
             const nisn = document.getElementById('login_nisn').value.trim();
