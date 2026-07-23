@@ -1279,7 +1279,50 @@
                 }
             });
         }
+async function loginGuru() {
+    // 1. Ambil input dari form HTML login guru
+    const emailEl = document.getElementById('guru-email') || document.getElementById('login-email');
+    const passEl = document.getElementById('guru-password') || document.getElementById('login-password');
 
+    if (!emailEl || !passEl) {
+        alert("Elemen input login tidak ditemukan di HTML!");
+        return;
+    }
+
+    const email = emailEl.value.trim();
+    const password = passEl.value;
+
+    if (!email || !password) {
+        showToast("Email/NIP dan password wajib diisi!", "error");
+        return;
+    }
+
+    try {
+        // 2. Tampilkan indicator loading (SweetAlert / Toast)
+        Swal.fire({
+            title: 'Memproses Login...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        // 3. Pengecekan via Firebase Auth (Rekomendasi)
+        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        Swal.close();
+        showToast("Login Guru Berhasil!", "success");
+
+        // Switch UI ke Dashboard Guru
+        currentUserRole = 'guru';
+        document.getElementById('login-page').classList.add('hidden');
+        document.getElementById('guru-dashboard').classList.remove('hidden');
+
+    } catch (error) {
+        Swal.close();
+        console.error("Login Error:", error);
+        showToast("Gagal Login: " + error.message, "error");
+    }
+}
         async function setupSiswaDashboard(id, data) {
             document.getElementById('app-loading').classList.add('hidden');
             document.getElementById('login-page').classList.add('hidden');
