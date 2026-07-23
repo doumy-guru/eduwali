@@ -3,268 +3,949 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tabel Data dengan Bulk Delete</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
-            padding: 30px;
-        }
-        .card {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .action-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .selected-info {
-            font-size: 14px;
-            color: #555;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            padding: 12px 15px;
-            border: 1px solid #e0e0e0;
-            text-align: left;
-        }
-        th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-        }
-        tr:hover {
-            background-color: #f1f5f9;
-        }
-        /* Style Tombol */
-        .btn {
-            padding: 8px 14px;
-            border: none;
-            border-radius: 4px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-view {
-            background-color: #0284c7;
-            color: white;
-        }
-        .btn-view:hover { background-color: #0369a1; }
-        
-        .btn-delete {
-            background-color: #ef4444;
-            color: white;
-        }
-        .btn-delete:hover { background-color: #dc2626; }
-        
-        .btn-delete:disabled {
-            background-color: #cbd5e1;
-            cursor: not-allowed;
-        }
+    <title>EduWali Pro - Manajemen Wali Kelas & Bimbingan Guru Wali</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- SheetJS (Excel Parser) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDK (v8 Compatibility) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-        /* Style Modal Detail */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            width: 400px;
-            max-width: 90%;
-        }
-        .modal h3 { margin-top: 0; }
-        .modal-close {
-            margin-top: 20px;
-            background-color: #64748b;
-            color: white;
-        }
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     </style>
 </head>
-<body>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
 
-<div class="card">
-    <h2>Data Pengguna</h2>
-    
-    <!-- Action Bar atas -->
-    <div class="action-bar">
-        <div class="selected-info" id="selectedCount">0 data terpilih</div>
-        <button id="btnBulkDelete" class="btn btn-delete" disabled onclick="hapusSekaligus()">
-            Hapus Terpilih
-        </button>
+    <!-- ==================== 1. HALAMAN LOGIN ==================== -->
+    <div id="login-page" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md space-y-6">
+            <div class="text-center space-y-1">
+                <div class="inline-block p-3 bg-indigo-50 rounded-2xl mb-2 text-indigo-600 font-black text-2xl">🎓</div>
+                <h1 class="text-2xl font-black text-indigo-600 tracking-tight">EduWali Pro</h1>
+                <p class="text-xs text-gray-500">Sistem Data Wali Kelas & Bimbingan Guru Wali</p>
+            </div>
+
+            <!-- Toggle Pilihan Akses Login -->
+            <div class="flex bg-gray-100 p-1 rounded-xl text-xs font-bold">
+                <button id="tab-login-guru" onclick="switchLoginTab('guru')" class="flex-1 py-2 rounded-lg bg-white shadow text-indigo-600 transition">Akses Guru</button>
+                <button id="tab-login-siswa" onclick="switchLoginTab('siswa')" class="flex-1 py-2 rounded-lg text-gray-500 hover:text-gray-700 transition">Akses Siswa</button>
+            </div>
+
+            <!-- Form Guru -->
+            <div id="form-login-guru" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Email Guru</label>
+                    <input type="email" id="guru-email" placeholder="guru@sekolah.sch.id" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Kata Sandi</label>
+                    <input type="password" id="guru-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                </div>
+                <button onclick="loginGuru()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow-lg transition">Masuk Dashboard Guru</button>
+            </div>
+
+            <!-- Form Siswa -->
+            <div id="form-login-siswa" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">NISN Siswa</label>
+                    <input type="text" id="siswa-nisn" placeholder="Masukkan NISN" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Kata Sandi / NIK</label>
+                    <input type="password" id="siswa-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                </div>
+                <button onclick="loginSiswa()" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs shadow-lg transition">Masuk Portal Siswa</button>
+            </div>
+        </div>
     </div>
 
-    <!-- Tabel Data -->
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 40px; text-align: center;">
-                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
-                </th>
-                <th>ID</th>
-                <th>Nama</th>
-                <th>Email</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody">
-            <tr data-id="1">
-                <td style="text-align: center;">
-                    <input type="checkbox" class="row-checkbox" value="1" onchange="updateSelection()">
-                </td>
-                <td>1</td>
-                <td>Budi Santoso</td>
-                <td>budi@example.com</td>
-                <td>
-                    <button class="btn btn-view" onclick="lihatData(1, 'Budi Santoso', 'budi@example.com')">Lihat</button>
-                    <button class="btn btn-delete" onclick="hapusSatuan(1, 'Budi Santoso')">Hapus</button>
-                </td>
-            </tr>
-            <tr data-id="2">
-                <td style="text-align: center;">
-                    <input type="checkbox" class="row-checkbox" value="2" onchange="updateSelection()">
-                </td>
-                <td>2</td>
-                <td>Siti Rahma</td>
-                <td>siti@example.com</td>
-                <td>
-                    <button class="btn btn-view" onclick="lihatData(2, 'Siti Rahma', 'siti@example.com')">Lihat</button>
-                    <button class="btn btn-delete" onclick="hapusSatuan(2, 'Siti Rahma')">Hapus</button>
-                </td>
-            </tr>
-            <tr data-id="3">
-                <td style="text-align: center;">
-                    <input type="checkbox" class="row-checkbox" value="3" onchange="updateSelection()">
-                </td>
-                <td>3</td>
-                <td>Ahmad Fauzi</td>
-                <td>ahmad@example.com</td>
-                <td>
-                    <button class="btn btn-view" onclick="lihatData(3, 'Ahmad Fauzi', 'ahmad@example.com')">Lihat</button>
-                    <button class="btn btn-delete" onclick="hapusSatuan(3, 'Ahmad Fauzi')">Hapus</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+    <!-- ==================== 2. DASHBOARD GURU ==================== -->
+    <div id="guru-dashboard" class="hidden min-h-screen flex flex-col">
+        <!-- Header / Navbar Utama -->
+        <header class="bg-indigo-600 text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-30">
+            <div class="flex items-center gap-3">
+                <span class="text-xl">🎓</span>
+                <div>
+                    <h1 class="font-bold text-base md:text-lg leading-none">EduWali Pro</h1>
+                    <p class="text-[11px] text-indigo-200">Panel Utama Guru & Wali Kelas</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="label-user-login" class="text-xs bg-indigo-700 px-3 py-1 rounded-full text-indigo-100 hidden md:inline-block">Guru Aktif</span>
+                <button onclick="logout()" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg font-medium transition shadow">Keluar</button>
+            </div>
+        </header>
 
-<!-- Modal Detail Data -->
-<div class="modal-overlay" id="detailModal">
-    <div class="modal">
-        <h3>Detail Pengguna</h3>
-        <p><strong>ID:</strong> <span id="modalId"></span></p>
-        <p><strong>Nama:</strong> <span id="modalNama"></span></p>
-        <p><strong>Email:</strong> <span id="modalEmail"></span></p>
-        <button class="btn modal-close" onclick="tutupModal()">Tutup</button>
+        <main class="p-4 md:p-6 flex-1 max-w-6xl w-full mx-auto space-y-6">
+            <!-- Toolbar Aksi Ringkasan -->
+            <div class="flex flex-wrap justify-between items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-200/80">
+                <div>
+                    <h2 class="text-base font-bold text-gray-800">Manajemen Data Siswa & Catatan Bimbingan</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Kelola 26 data siswa wali kelas maupun bimbingan secara terpadu</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="bukaModalImpor()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-2">
+                        <span>📊</span> Impor Excel (26 Data)
+                    </button>
+                    <button onclick="bukaModalKasus()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-2">
+                        <span>✍️</span> Catat Bimbingan / Kasus
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel Daftar Siswa dengan Filter Tab & Bulk Action Bar -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200/80 space-y-4">
+                <!-- Header Filter & Tabs -->
+                <div class="flex flex-wrap items-center justify-between border-b pb-4 gap-3">
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-800">Daftar Siswa Kelolaan</h3>
+                        <p class="text-[11px] text-gray-400">Saring daftar atau centang untuk menghapus massal</p>
+                    </div>
+
+                    <!-- Filter Toggle Menu Tab -->
+                    <div class="flex bg-gray-100 p-1 rounded-xl text-xs font-semibold">
+                        <button id="ftab-wali" onclick="switchFilterKategori('wali')" class="px-3.5 py-1.5 rounded-lg bg-white text-indigo-600 shadow-sm transition">Siswa Wali Kelas</button>
+                        <button id="ftab-bk" onclick="switchFilterKategori('bk')" class="px-3.5 py-1.5 rounded-lg text-gray-500 hover:text-gray-700 transition">Siswa Bimbingan Guru Wali</button>
+                        <button id="ftab-semua" onclick="switchFilterKategori('semua')" class="px-3.5 py-1.5 rounded-lg text-gray-500 hover:text-gray-700 transition">Semua Siswa</button>
+                    </div>
+                </div>
+
+                <!-- Sub-Baris Aksi Massal (Bulk Action Bar) -->
+                <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-gray-200/60 text-xs">
+                    <label class="flex items-center gap-2 font-semibold text-gray-700 cursor-pointer select-none">
+                        <input type="checkbox" id="check-select-all" onchange="toggleSelectAll(this)" class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+                        <span>Pilih Semua Siswa</span>
+                    </label>
+
+                    <div class="flex items-center gap-3">
+                        <span id="label-selected-count" class="text-gray-500 font-medium">0 siswa dipilih</span>
+                        <button id="btn-bulk-delete" disabled onclick="hapusSiswaSekaligus()" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 disabled:bg-gray-300 text-white font-bold rounded-lg transition text-xs flex items-center gap-1.5 shadow-sm">
+                            <span>🗑️</span> <span id="text-btn-bulk">Hapus Terpilih</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Container Hasil Render Siswa -->
+                <div id="guru_cont_siswa" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+            </div>
+
+            <!-- Panel Riwayat Catatan Bimbingan -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200/80">
+                <h3 class="text-sm font-bold text-gray-800 mb-4 border-b pb-3">Riwayat Catatan Bimbingan Guru Wali & Kasus</h3>
+                <div id="guru_cont_kasus" class="space-y-3"></div>
+            </div>
+        </main>
     </div>
-</div>
 
-<script>
-    // 1. Fungsi Toggle Centang Semua (Select All)
-    function toggleSelectAll(selectAllCheckbox) {
-        const checkboxes = document.querySelectorAll('.row-checkbox');
-        checkboxes.forEach(cb => {
-            cb.checked = selectAllCheckbox.checked;
-        });
-        updateSelection();
-    }
+    <!-- ==================== 3. PORTAL SISWA ==================== -->
+    <div id="siswa-dashboard" class="hidden min-h-screen flex flex-col bg-slate-50">
+        <header class="bg-purple-700 text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-30">
+            <div class="flex items-center gap-3">
+                <span class="text-xl">👨‍🎓</span>
+                <div>
+                    <h1 class="font-bold text-base">Portal Siswa — EduWali Pro</h1>
+                    <p class="text-[11px] text-purple-200">Informasi Biodata & Catatan Kedisiplinan</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg font-medium transition shadow">Keluar</button>
+        </header>
 
-    // 2. Fungsi Update Counter & Tombol Hapus Terpilih
-    function updateSelection() {
-        const checkboxes = document.querySelectorAll('.row-checkbox');
-        const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-        const selectAllHeader = document.getElementById('selectAll');
-        const btnBulkDelete = document.getElementById('btnBulkDelete');
-        const selectedCount = document.getElementById('selectedCount');
+        <main class="p-4 md:p-6 flex-1 max-w-4xl w-full mx-auto space-y-6">
+            <div id="siswa_profile_card" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200/80 space-y-4">
+                <div class="text-center py-6 text-xs text-gray-400">Memuat profil siswa...</div>
+            </div>
 
-        const totalChecked = checkedBoxes.length;
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200/80">
+                <h3 class="text-sm font-bold text-gray-800 mb-4 border-b pb-3">Catatan Bimbingan Guru Wali & Rekapitulasi Anda</h3>
+                <div id="siswa_cont_kasus" class="space-y-3">
+                    <div class="text-center py-4 text-xs text-gray-400">Tidak ada catatan bimbingan.</div>
+                </div>
+            </div>
+        </main>
+    </div>
 
-        // Update teks counter
-        selectedCount.textContent = `${totalChecked} data terpilih`;
-
-        // Atur status tombol Hapus Terpilih
-        if (totalChecked > 0) {
-            btnBulkDelete.disabled = false;
-            btnBulkDelete.textContent = `Hapus (${totalChecked}) Terpilih`;
-        } else {
-            btnBulkDelete.disabled = true;
-            btnBulkDelete.textContent = 'Hapus Terpilih';
-        }
-
-        // Atur centang 'Select All' berdasarkan kondisi centang individual
-        if (checkboxes.length > 0 && totalChecked === checkboxes.length) {
-            selectAllHeader.checked = true;
-            selectAllHeader.indeterminate = false;
-        } else if (totalChecked > 0) {
-            selectAllHeader.checked = false;
-            selectAllHeader.indeterminate = true; // Indikator sebagian tercentang
-        } else {
-            selectAllHeader.checked = false;
-            selectAllHeader.indeterminate = false;
-        }
-    }
-
-    // 3. Fungsi Lihat Data (Detail Modal)
-    function lihatData(id, nama, email) {
-        document.getElementById('modalId').textContent = id;
-        document.getElementById('modalNama').textContent = nama;
-        document.getElementById('modalEmail').textContent = email;
-        document.getElementById('detailModal').style.display = 'flex';
-    }
-
-    function tutupModal() {
-        document.getElementById('detailModal').style.display = 'none';
-    }
-
-    // 4. Fungsi Hapus Satuan
-    function hapusSatuan(id, nama) {
-        if (confirm(`Apakah Anda yakin ingin menghapus data "${nama}" (ID: ${id})?`)) {
-            // Hapus baris dari DOM (atau panggil API backend di sini)
-            const row = document.querySelector(`tr[data-id="${id}"]`);
-            if (row) row.remove();
+    <!-- ==================== MODAL 1: IMPOR EXCEL ==================== -->
+    <div id="modal-impor-excel" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-gray-800 text-base">Impor 26 Data Siswa dari Excel</h3>
+                <button onclick="tutupModalImpor()" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+            </div>
             
-            updateSelection();
-            alert(`Data "${nama}" berhasil dihapus.`);
+            <div class="space-y-3">
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    Unggah file <code class="bg-gray-100 px-1 rounded text-indigo-600 font-semibold">.xlsx</code> / <code class="bg-gray-100 px-1 rounded text-indigo-600 font-semibold">.csv</code>. Header kolom otomatis disesuaikan (misal: <code class="text-gray-700 font-bold">nama, nisn, nik, kelas, jurusan, alamat</code>, dll).
+                </p>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Pilih Status Kategori Siswa</label>
+                    <select id="impor-kategori-siswa" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="wali">Siswa Wali Kelas Sahaja</option>
+                        <option value="bk">Siswa Bimbingan Guru Wali Sahaja</option>
+                        <option value="keduanya">Keduanya (Siswa Wali Kelas & Bimbingan Guru Wali)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Pilih File Excel</label>
+                    <input type="file" id="input-file-excel" accept=".xlsx, .xls, .csv" class="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button type="button" onclick="tutupModalImpor()" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-200 transition">Batal</button>
+                <button type="button" onclick="prosesEksekusiImporExcel()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 shadow transition">Proses & Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 2: CATAT KASUS / BIMBINGAN ==================== -->
+    <div id="modal-tambah-kasus" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-gray-800 text-base">Tambah Catatan Bimbingan</h3>
+                <button onclick="tutupModalKasus()" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+            </div>
+            
+            <form id="form-tambah-kasus" onsubmit="event.preventDefault(); simpanKasusGuru();" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Pilih Target Siswa</label>
+                    <select id="kasus-siswa-id" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" required>
+                        <option value="">-- Memuat Siswa... --</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">Tipe Catatan</label>
+                        <select id="kasus-tipe" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="Bimbingan Guru Wali">Bimbingan Guru Wali</option>
+                            <option value="Pelanggaran">Pelanggaran</option>
+                            <option value="Prestasi">Prestasi</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">Poin Kedisiplinan</label>
+                        <input type="number" id="kasus-poin" value="0" min="0" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Deskripsi Hasil Bimbingan / Kejadian</label>
+                    <textarea id="kasus-deskripsi" rows="3" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Tulis rincian catatan di sini..." required></textarea>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t">
+                    <button type="button" onclick="tutupModalKasus()" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-200 transition">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 shadow transition">Simpan Catatan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 3: LIHAT DETAIL 26 DATA SISWA ==================== -->
+    <div id="modal-detail-siswa" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3 shrink-0">
+                <div>
+                    <h3 class="font-bold text-gray-800 text-base" id="detail-title-nama">Detail Biodata Siswa</h3>
+                    <p class="text-xs text-gray-400">Rincian 26 kolom informasi terdaftar</p>
+                </div>
+                <button onclick="tutupModalDetail()" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+            </div>
+            
+            <!-- Grid Container 26 Data -->
+            <div id="detail-body-grid" class="overflow-y-auto p-1 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-gray-600">
+                <!-- Isian detail akan di-render via JavaScript -->
+            </div>
+
+            <div class="flex justify-end border-t pt-3 shrink-0">
+                <button type="button" onclick="tutupModalDetail()" class="px-5 py-2 bg-gray-200 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-300 transition">Tutup Modal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT SYSTEM ==================== -->
+    <script>
+        // --- 1. FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+            firebase.initializeApp(firebaseConfig);
         }
-    }
 
-    // 5. Fungsi Hapus Sekaligus (Bulk Delete)
-    function hapusSekaligus() {
-        const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-        const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+        function getSiswaRef() {
+            if (firebase.apps.length) {
+                return firebase.firestore().collection('siswa');
+            }
+            return null;
+        }
 
-        if (selectedIds.length === 0) return;
+        function showToast(msg, icon = 'success') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: icon,
+                title: msg,
+                showConfirmButton: false,
+                timer: 2500
+            });
+        }
 
-        if (confirm(`Apakah Anda yakin ingin menghapus ${selectedIds.length} data terpilih (ID: ${selectedIds.join(', ')})?`)) {
-            // Hapus semua baris yang tercentang
-            selectedIds.forEach(id => {
-                const row = document.querySelector(`tr[data-id="${id}"]`);
-                if (row) row.remove();
+        // List 26 Field Manifest Siswa lengkap dengan labelnya
+        const list26DataLabels = [
+            { key: 'nama', label: 'Nama Lengkap' },
+            { key: 'nisn', label: 'NISN' },
+            { key: 'nik', label: 'NIK Siswa' },
+            { key: 'tempat_lahir', label: 'Tempat Lahir' },
+            { key: 'tgl_lahir', label: 'Tanggal Lahir' },
+            { key: 'jk', label: 'Jenis Kelamin' },
+            { key: 'agama', label: 'Agama' },
+            { key: 'alamat', label: 'Alamat Rumah' },
+            { key: 'rt_rw', label: 'RT / RW' },
+            { key: 'kelurahan', label: 'Kelurahan / Desa' },
+            { key: 'kecamatan', label: 'Kecamatan' },
+            { key: 'kabupaten', label: 'Kabupaten / Kota' },
+            { key: 'provinsi', label: 'Provinsi' },
+            { key: 'kode_pos', label: 'Kode Pos' },
+            { key: 'no_hp', label: 'No. HP / WA Siswa' },
+            { key: 'email', label: 'Email Siswa' },
+            { key: 'sekolah_asal', label: 'Sekolah Asal' },
+            { key: 'kelas', label: 'Kelas' },
+            { key: 'jurusan', label: 'Jurusan / Peminatan' },
+            { key: 'nama_ayah', label: 'Nama Ayah' },
+            { key: 'nik_ayah', label: 'NIK Ayah' },
+            { key: 'pekerjaan_ayah', label: 'Pekerjaan Ayah' },
+            { key: 'nama_ibu', label: 'Nama Ibu' },
+            { key: 'nik_ibu', label: 'NIK Ibu' },
+            { key: 'pekerjaan_ibu', label: 'Pekerjaan Ibu' },
+            { key: 'no_hp_ortu', label: 'No. HP / WA Orang Tua' }
+        ];
+
+        // Global Cache & Filter State
+        let currentFilterKategori = 'wali';
+        let cacheDataSiswa = [];
+
+        // --- 2. EVENT LISTENER & SWITCH LOGIN ---
+        window.addEventListener('DOMContentLoaded', () => {
+            const guruPass = document.getElementById('guru-password');
+            if (guruPass) {
+                guruPass.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); loginGuru(); }
+                });
+            }
+
+            const siswaPass = document.getElementById('siswa-password');
+            if (siswaPass) {
+                siswaPass.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); loginSiswa(); }
+                });
+            }
+        });
+
+        function switchLoginTab(role) {
+            const tabGuru = document.getElementById('tab-login-guru');
+            const tabSiswa = document.getElementById('tab-login-siswa');
+            const formGuru = document.getElementById('form-login-guru');
+            const formSiswa = document.getElementById('form-login-siswa');
+
+            if (role === 'guru') {
+                tabGuru.className = "flex-1 py-2 rounded-lg bg-white shadow text-indigo-600 transition";
+                tabSiswa.className = "flex-1 py-2 rounded-lg text-gray-500 hover:text-gray-700 transition";
+                formGuru.classList.remove('hidden');
+                formSiswa.classList.add('hidden');
+            } else {
+                tabSiswa.className = "flex-1 py-2 rounded-lg bg-white shadow text-purple-600 transition";
+                tabGuru.className = "flex-1 py-2 rounded-lg text-gray-500 hover:text-gray-700 transition";
+                formSiswa.classList.remove('hidden');
+                formGuru.classList.add('hidden');
+            }
+        }
+
+        // --- 3. LOGIN & LOGOUT ---
+        async function loginGuru() {
+            const email = document.getElementById('guru-email').value.trim();
+            const pass = document.getElementById('guru-password').value.trim();
+
+            if (!email || !pass) return showToast("Harap isi email dan kata sandi", "warning");
+
+            Swal.fire({ title: 'Memproses Masuk...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                if (firebase.apps.length) {
+                    await firebase.auth().signInWithEmailAndPassword(email, pass);
+                }
+                Swal.close();
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('guru-dashboard').classList.remove('hidden');
+
+                loadDataSiswaGuru();
+                loadSemuaKasusGuru();
+                showToast("Selamat Datang, Guru!");
+            } catch (err) {
+                Swal.close();
+                showToast("Login Gagal: " + err.message, "error");
+            }
+        }
+
+        async function loginSiswa() {
+            const nisn = document.getElementById('siswa-nisn').value.trim();
+            if (!nisn) return showToast("Harap masukkan NISN Anda", "warning");
+
+            Swal.fire({ title: 'Memeriksa Data Siswa...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                let sData = cacheDataSiswa.find(s => String(s.nisn) === nisn || String(s.id) === nisn);
+
+                if (!sData && firebase.apps.length) {
+                    const snap = await getSiswaRef().doc(nisn).get();
+                    if (snap.exists) sData = { id: snap.id, ...snap.data() };
+                }
+
+                if (!sData && cacheDataSiswa.length === 0) {
+                    sData = { id: nisn, nama: "Siswa Percontohan", nisn: nisn, kelas: "XII RPL 1", poin: 0, kategori: ["wali", "bk"] };
+                }
+
+                Swal.close();
+
+                if (!sData) return showToast("Data NISN tersebut tidak ditemukan", "error");
+
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('siswa-dashboard').classList.remove('hidden');
+
+                renderPortalSiswa(sData);
+                loadKasusSiswaDetail(sData.id);
+                showToast("Selamat datang, " + (sData.nama || 'Siswa') + "!");
+
+            } catch (err) {
+                Swal.close();
+                showToast("Error Login: " + err.message, "error");
+            }
+        }
+
+        function logout() {
+            if (firebase.apps.length && firebase.auth().currentUser) {
+                firebase.auth().signOut();
+            }
+            document.getElementById('guru-dashboard').classList.add('hidden');
+            document.getElementById('siswa-dashboard').classList.add('hidden');
+            document.getElementById('login-page').classList.remove('hidden');
+            showToast("Berhasil Keluar");
+        }
+
+        // --- 4. RENDER SISWA, FILTER & DUAL STATUS ---
+        function switchFilterKategori(kategori) {
+            currentFilterKategori = kategori;
+            const tabWali = document.getElementById('ftab-wali');
+            const tabBk = document.getElementById('ftab-bk');
+            const tabSemua = document.getElementById('ftab-semua');
+
+            [tabWali, tabBk, tabSemua].forEach(btn => {
+                if (btn) btn.className = "px-3.5 py-1.5 rounded-lg text-gray-500 hover:text-gray-700 transition";
             });
 
-            // Reset header select all & update counter
-            document.getElementById('selectAll').checked = false;
-            updateSelection();
+            if (kategori === 'wali' && tabWali) tabWali.className = "px-3.5 py-1.5 rounded-lg bg-white text-indigo-600 shadow-sm transition";
+            else if (kategori === 'bk' && tabBk) tabBk.className = "px-3.5 py-1.5 rounded-lg bg-white text-indigo-600 shadow-sm transition";
+            else if (tabSemua) tabSemua.className = "px-3.5 py-1.5 rounded-lg bg-white text-indigo-600 shadow-sm transition";
 
-            alert(`${selectedIds.length} data berhasil dihapus.`);
-            
-            // Catatan: Jika menggunakan Backend (Node.js/Laravel/PHP), 
-            // array `selectedIds` ini dikirim via fetch/axios POST ke API backend.
+            renderSiswaByKategori();
         }
-    }
-</script>
 
+        async function loadDataSiswaGuru() {
+            if (firebase.apps.length) {
+                try {
+                    const snap = await getSiswaRef().get();
+                    cacheDataSiswa = [];
+                    snap.forEach(doc => cacheDataSiswa.push({ id: doc.id, ...doc.data() }));
+                } catch (err) {
+                    showToast("Gagal memuat data cloud: " + err.message, "error");
+                }
+            }
+            
+            renderSiswaByKategori();
+            populateDropdownSiswaKasus();
+        }
+
+        function renderSiswaByKategori() {
+            const cont = document.getElementById('guru_cont_siswa');
+            if (!cont) return;
+
+            const filtered = cacheDataSiswa.filter(s => {
+                if (currentFilterKategori === 'semua') return true;
+
+                let katArray = [];
+                if (Array.isArray(s.kategori)) katArray = s.kategori;
+                else if (s.kategori === 'keduanya') katArray = ['wali', 'bk'];
+                else if (typeof s.kategori === 'string') katArray = [s.kategori];
+                else katArray = ['wali'];
+
+                return katArray.includes(currentFilterKategori);
+            });
+
+            // Reset Select All Checkbox saat re-render
+            const chkAll = document.getElementById('check-select-all');
+            if (chkAll) chkAll.checked = false;
+            updateSelectedCount();
+
+            if (filtered.length === 0) {
+                cont.innerHTML = `
+                    <div class="col-span-full text-center py-8 text-gray-400 text-xs bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                        Belum ada siswa dalam kategori ini.
+                    </div>
+                `;
+                return;
+            }
+
+            cont.innerHTML = '';
+            filtered.forEach(s => {
+                let isWali = false;
+                let isBk = false;
+
+                if (Array.isArray(s.kategori)) {
+                    isWali = s.kategori.includes('wali');
+                    isBk = s.kategori.includes('bk');
+                } else if (s.kategori === 'keduanya') {
+                    isWali = true; isBk = true;
+                } else if (s.kategori === 'bk') {
+                    isBk = true;
+                } else {
+                    isWali = true;
+                }
+
+                cont.innerHTML += `
+                    <div class="p-3.5 border border-gray-200/80 rounded-xl bg-gray-50/50 hover:bg-white hover:shadow-md transition text-xs flex justify-between items-start gap-3">
+                        <div class="flex items-start gap-2.5">
+                            <input type="checkbox" value="${s.id}" onchange="updateSelectedCount()" class="row-siswa-checkbox w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 mt-1 cursor-pointer">
+                            <div class="space-y-1">
+                                <div class="font-bold text-gray-800 text-sm">${s.nama || 'Siswa Tanpa Nama'}</div>
+                                <div class="text-gray-500 text-[11px]">NISN: <span class="font-semibold text-gray-700">${s.nisn || '-'}</span> | Kelas: <span class="font-semibold text-gray-700">${s.kelas || '-'}</span></div>
+                                <div class="flex flex-wrap gap-1 pt-0.5">
+                                    ${isWali ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">Wali Kelas</span>` : ''}
+                                    ${isBk ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700">Bimbingan</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-end gap-2 shrink-0">
+                            <span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100">${s.poin || 0} Poin</span>
+                            <div class="flex gap-1">
+                                <button onclick="bukaModalDetail('${s.id}')" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white text-[10px] font-bold rounded-lg shadow-sm transition">👁️ Lihat</button>
+                                <button onclick="hapusSiswaSatuan('${s.id}', '${s.nama || 'Siswa'}')" class="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold rounded-lg shadow-sm transition">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 5. HAPUS & CENTANG SEKALIGUS (BULK ACTIONS) ---
+        function toggleSelectAll(masterCheckbox) {
+            const rowCheckboxes = document.querySelectorAll('.row-siswa-checkbox');
+            rowCheckboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const rowCheckboxes = document.querySelectorAll('.row-siswa-checkbox');
+            const checkedBoxes = document.querySelectorAll('.row-siswa-checkbox:checked');
+            const btnBulkDelete = document.getElementById('btn-bulk-delete');
+            const textBtnBulk = document.getElementById('text-btn-bulk');
+            const labelCount = document.getElementById('label-selected-count');
+
+            const totalChecked = checkedBoxes.length;
+            if (labelCount) labelCount.textContent = `${totalChecked} siswa dipilih`;
+
+            if (totalChecked > 0) {
+                if (btnBulkDelete) btnBulkDelete.disabled = false;
+                if (textBtnBulk) textBtnBulk.textContent = `Hapus (${totalChecked}) Terpilih`;
+            } else {
+                if (btnBulkDelete) btnBulkDelete.disabled = true;
+                if (textBtnBulk) textBtnBulk.textContent = `Hapus Terpilih`;
+            }
+        }
+
+        async function hapusSiswaSatuan(id, nama) {
+            const res = await Swal.fire({
+                title: 'Hapus Data Siswa?',
+                text: `Apakah Anda yakin ingin menghapus "${nama}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            });
+
+            if (!res.isConfirmed) return;
+
+            // Hapus dari Firebase
+            if (firebase.apps.length) {
+                try {
+                    await getSiswaRef().doc(String(id)).delete();
+                } catch (e) {
+                    console.error("Gagal hapus Firestore:", e);
+                }
+            }
+
+            // Hapus dari cache lokal
+            cacheDataSiswa = cacheDataSiswa.filter(s => String(s.id) !== String(id));
+            
+            showToast(`Data ${nama} berhasil dihapus!`);
+            renderSiswaByKategori();
+            populateDropdownSiswaKasus();
+        }
+
+        async function hapusSiswaSekaligus() {
+            const checkedBoxes = document.querySelectorAll('.row-siswa-checkbox:checked');
+            const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+            if (selectedIds.length === 0) return;
+
+            const res = await Swal.fire({
+                title: `Hapus ${selectedIds.length} Data Siswa?`,
+                text: 'Data yang dihapus tidak dapat dikembalikan lagi.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: `Ya, Hapus ${selectedIds.length} Siswa`,
+                cancelButtonText: 'Batal'
+            });
+
+            if (!res.isConfirmed) return;
+
+            Swal.fire({ title: 'Menghapus Data...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                if (firebase.apps.length) {
+                    const batch = firebase.firestore().batch();
+                    selectedIds.forEach(id => {
+                        batch.delete(getSiswaRef().doc(String(id)));
+                    });
+                    await batch.commit();
+                }
+
+                // Update Cache Lokal
+                cacheDataSiswa = cacheDataSiswa.filter(s => !selectedIds.includes(String(s.id)));
+
+                Swal.close();
+                showToast(`Berhasil menghapus ${selectedIds.length} data siswa!`);
+                
+                renderSiswaByKategori();
+                populateDropdownSiswaKasus();
+
+            } catch (err) {
+                Swal.close();
+                showToast("Gagal menghapus: " + err.message, "error");
+            }
+        }
+
+        // --- 6. MODAL LIHAT DETAIL 26 DATA ---
+        function bukaModalDetail(id) {
+            const siswa = cacheDataSiswa.find(s => String(s.id) === String(id));
+            if (!siswa) return showToast("Data siswa tidak ditemukan", "error");
+
+            document.getElementById('detail-title-nama').textContent = siswa.nama || 'Detail Biodata Siswa';
+            const gridCont = document.getElementById('detail-body-grid');
+            gridCont.innerHTML = '';
+
+            list26DataLabels.forEach(item => {
+                const val = siswa[item.key] || '-';
+                gridCont.innerHTML += `
+                    <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-100">
+                        <span class="text-gray-400 block text-[10px] font-semibold uppercase tracking-wider">${item.label}</span>
+                        <span class="font-bold text-gray-800 text-xs">${val}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('modal-detail-siswa').classList.remove('hidden');
+        }
+
+        function tutupModalDetail() {
+            document.getElementById('modal-detail-siswa').classList.add('hidden');
+        }
+
+        // Dropdown Target Siswa untuk Modal Tambah Kasus
+        function populateDropdownSiswaKasus() {
+            const selectEl = document.getElementById('kasus-siswa-id');
+            if (!selectEl) return;
+
+            selectEl.innerHTML = '<option value="">-- Pilih Target Siswa --</option>';
+            cacheDataSiswa.forEach(s => {
+                selectEl.innerHTML += `<option value="${s.id}">${s.nama || 'Siswa'} - NISN: ${s.nisn || '-'}</option>`;
+            });
+        }
+
+        // --- 7. IMPOR EXCEL DATA SISWA ---
+        function bukaModalImpor() { document.getElementById('modal-impor-excel').classList.remove('hidden'); }
+        function tutupModalImpor() {
+            document.getElementById('modal-impor-excel').classList.add('hidden');
+            document.getElementById('input-file-excel').value = '';
+        }
+
+        async function prosesEksekusiImporExcel() {
+            const fileInput = document.getElementById('input-file-excel');
+            const kategoriPilihan = document.getElementById('impor-kategori-siswa').value;
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                return showToast("Pilih file Excel terlebih dahulu!", "warning");
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            Swal.fire({ title: 'Membaca & Memproses Data Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            reader.onload = async function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+                    if (!jsonData || jsonData.length === 0) {
+                        Swal.close();
+                        return showToast("File Excel kosong atau format tidak sesuai", "error");
+                    }
+
+                    let kategoriArray = (kategoriPilihan === 'keduanya') ? ['wali', 'bk'] : [kategoriPilihan];
+                    let importedList = [];
+
+                    jsonData.forEach((row, index) => {
+                        const normalizedRow = {};
+                        Object.keys(row).forEach(k => {
+                            normalizedRow[k.trim().toLowerCase().replace(/ /g, '_')] = String(row[k]).trim();
+                        });
+
+                        const nisnVal = normalizedRow['nisn'] || `AUTO-${index + 1}`;
+                        const dataSiswa = { id: nisnVal };
+
+                        list26DataLabels.forEach(item => {
+                            dataSiswa[item.key] = normalizedRow[item.key] !== undefined ? normalizedRow[item.key] : "";
+                        });
+
+                        dataSiswa.kategori = kategoriArray;
+                        dataSiswa.poin = Number(normalizedRow['poin']) || 0;
+
+                        importedList.push(dataSiswa);
+                    });
+
+                    // Simpan ke Firebase jika aktif
+                    if (firebase.apps.length) {
+                        const batch = firebase.firestore().batch();
+                        importedList.forEach(s => {
+                            const docRef = getSiswaRef().doc(String(s.nisn || s.id));
+                            batch.set(docRef, s, { merge: true });
+                        });
+                        await batch.commit();
+                    }
+
+                    // Perbarui Local Cache
+                    importedList.forEach(s => {
+                        const existingIdx = cacheDataSiswa.findIndex(item => String(item.nisn) === String(s.nisn));
+                        if (existingIdx >= 0) cacheDataSiswa[existingIdx] = s;
+                        else cacheDataSiswa.push(s);
+                    });
+
+                    Swal.close();
+                    showToast(`Berhasil mengimpor ${importedList.length} data siswa!`);
+                    tutupModalImpor();
+                    
+                    renderSiswaByKategori();
+                    populateDropdownSiswaKasus();
+
+                } catch (err) {
+                    Swal.close();
+                    showToast("Gagal memproses file: " + err.message, "error");
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        // --- 8. SIMPAN & BACA CATATAN KASUS ---
+        function bukaModalKasus() { document.getElementById('modal-tambah-kasus').classList.remove('hidden'); }
+        function tutupModalKasus() {
+            document.getElementById('modal-tambah-kasus').classList.add('hidden');
+            document.getElementById('form-tambah-kasus').reset();
+        }
+
+        async function simpanKasusGuru() {
+            const siswaId = document.getElementById('kasus-siswa-id').value;
+            const tipe = document.getElementById('kasus-tipe').value;
+            const poin = parseInt(document.getElementById('kasus-poin').value) || 0;
+            const deskripsi = document.getElementById('kasus-deskripsi').value.trim();
+
+            if (!siswaId || !deskripsi) return showToast("Lengkapi form catatan!", "warning");
+
+            Swal.fire({ title: 'Menyimpan Catatan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                if (firebase.apps.length) {
+                    await getSiswaRef().doc(siswaId).collection('kasus').add({
+                        tipe: tipe,
+                        poin: poin,
+                        deskripsi: deskripsi,
+                        tanggal: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    if (poin > 0) {
+                        await getSiswaRef().doc(siswaId).update({
+                            poin: firebase.firestore.FieldValue.increment(poin)
+                        });
+                    }
+                }
+
+                // Update lokal poin siswa
+                const sIdx = cacheDataSiswa.findIndex(s => String(s.id) === String(siswaId));
+                if (sIdx >= 0 && poin > 0) {
+                    cacheDataSiswa[sIdx].poin = (cacheDataSiswa[sIdx].poin || 0) + poin;
+                }
+
+                Swal.close();
+                showToast("Catatan berhasil disimpan!");
+                tutupModalKasus();
+                
+                renderSiswaByKategori();
+                loadSemuaKasusGuru();
+            } catch (err) {
+                Swal.close();
+                showToast("Gagal menyimpan: " + err.message, "error");
+            }
+        }
+
+        async function loadSemuaKasusGuru() {
+            const cont = document.getElementById('guru_cont_kasus');
+            if (!cont) return;
+
+            if (!firebase.apps.length) {
+                cont.innerHTML = '<div class="p-4 text-center text-xs text-gray-400 bg-gray-50 rounded-xl">Catatan bimbingan akan tersimpan di cloud setelah Firebase dikonfigurasi.</div>';
+                return;
+            }
+
+            try {
+                const snap = await firebase.firestore().collectionGroup('kasus').limit(20).get();
+                cont.innerHTML = '';
+
+                if (snap.empty) {
+                    cont.innerHTML = '<div class="text-center py-6 text-gray-400 text-xs">Belum ada riwayat catatan bimbingan.</div>';
+                    return;
+                }
+
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const tgl = data.tanggal ? new Date(data.tanggal.toDate()).toLocaleDateString('id-ID') : 'Baru saja';
+                    
+                    cont.innerHTML += `
+                        <div class="p-3.5 border border-gray-100 rounded-xl bg-gray-50/60 flex justify-between items-start text-xs">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-100 text-indigo-700">${data.tipe || 'Bimbingan'}</span>
+                                    <span class="text-[10px] text-gray-400">${tgl}</span>
+                                </div>
+                                <p class="text-gray-700 mt-1">${data.deskripsi || ''}</p>
+                            </div>
+                            ${data.poin ? `<span class="text-xs font-bold px-2.5 py-1 bg-red-100 text-red-600 rounded-lg">+${data.poin} Poin</span>` : ''}
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                cont.innerHTML = '<div class="text-xs text-red-500 p-2">Gagal memuat riwayat kasus.</div>';
+            }
+        }
+
+        // --- 9. PORTAL SISWA ---
+        function renderPortalSiswa(s) {
+            const card = document.getElementById('siswa_profile_card');
+            if (!card) return;
+
+            let isWali = false;
+            let isBk = false;
+            if (Array.isArray(s.kategori)) {
+                isWali = s.kategori.includes('wali');
+                isBk = s.kategori.includes('bk');
+            } else {
+                isWali = true;
+            }
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start border-b pb-4 gap-2">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800">${s.nama || 'Siswa'}</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">NISN: ${s.nisn || '-'} | NIK: ${s.nik || '-'}</p>
+                        <div class="flex gap-1.5 mt-2">
+                            ${isWali ? `<span class="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 text-blue-700">Siswa Wali Kelas</span>` : ''}
+                            ${isBk ? `<span class="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-purple-100 text-purple-700">Siswa Bimbingan Guru Wali</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <span class="text-xs text-gray-400 block">Poin Kedisiplinan</span>
+                        <span class="text-2xl font-black text-red-600">${s.poin || 0}</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs text-gray-600 pt-1">
+                    <div><span class="text-gray-400 block">Kelas:</span> <span class="font-semibold text-gray-800">${s.kelas || '-'}</span></div>
+                    <div><span class="text-gray-400 block">Jurusan:</span> <span class="font-semibold text-gray-800">${s.jurusan || '-'}</span></div>
+                    <div><span class="text-gray-400 block">Jenis Kelamin:</span> <span class="font-semibold text-gray-800">${s.jk || '-'}</span></div>
+                    <div><span class="text-gray-400 block">No. HP Siswa:</span> <span class="font-semibold text-gray-800">${s.no_hp || '-'}</span></div>
+                    <div><span class="text-gray-400 block">Orang Tua:</span> <span class="font-semibold text-gray-800">${s.nama_ayah || s.nama_ibu || '-'}</span></div>
+                    <div><span class="text-gray-400 block">No. HP Ortu:</span> <span class="font-semibold text-gray-800">${s.no_hp_ortu || '-'}</span></div>
+                </div>
+            `;
+        }
+
+        async function loadKasusSiswaDetail(siswaId) {
+            const cont = document.getElementById('siswa_cont_kasus');
+            if (!cont) return;
+
+            if (!firebase.apps.length) {
+                cont.innerHTML = '<div class="text-xs text-gray-400 text-center py-4">Belum ada riwayat catatan bimbingan.</div>';
+                return;
+            }
+
+            try {
+                const snap = await getSiswaRef().doc(siswaId).collection('kasus').get();
+                cont.innerHTML = '';
+
+                if (snap.empty) {
+                    cont.innerHTML = '<div class="text-center py-4 text-xs text-gray-400">Belum ada catatan Bimbingan Guru Wali atau pelanggaran.</div>';
+                    return;
+                }
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    cont.innerHTML += `
+                        <div class="p-3 border border-gray-100 rounded-xl bg-gray-50 flex justify-between items-center text-xs">
+                            <div>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700">${d.tipe || 'Catatan'}</span>
+                                <p class="text-gray-700 mt-1">${d.deskripsi || ''}</p>
+                            </div>
+                            ${d.poin ? `<span class="font-bold text-red-600 bg-red-50 px-2 py-1 rounded text-xs">+${d.poin} Poin</span>` : ''}
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                cont.innerHTML = '<div class="text-xs text-red-500">Gagal memuat catatan bimbingan siswa.</div>';
+            }
+        }
+    </script>
 </body>
 </html>
