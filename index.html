@@ -75,74 +75,26 @@
             </div>
 
             <!-- Form Login Guru -->
-            <!-- AREA TAMPILAN LOGIN -->
-<div id="login-box">
-  <h3>Login Guru Eduwali</h3>
-  
-  <!-- Kolom Input -->
-  <input type="email" id="inputEmail" placeholder="Email Guru (contoh: guru@sekolah.com)" required>
-  <br><br>
-  <input type="password" id="inputPassword" placeholder="Kata Sandi" required>
-  <br><br>
-  
-  <!-- Tombol Login yang memanggil fungsi jalankanLogin() -->
-  <button onclick="jalankanLogin()">Masuk ke Dashboard</button>
-</div>
-
-<!-- AREA SCRIPT FIREBASE -->
-<script type="module">
-  // 1. Import modul Firebase
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-  // 2. Konfigurasi Firebase Anda
-  const firebaseConfig = {
-    apiKey: "AIzaSyBzmqSgEL3a5bFSkRBUjGp-SZ4J3fk-ZwU",
-    authDomain: "eduwali.firebaseapp.com",
-    projectId: "eduwali",
-    storageBucket: "eduwali.firebasestorage.app",
-    messagingSenderId: "218381600621",
-    appId: "1:218381600621:web:ba891d7fe67fd89f767c64",
-    measurementId: "G-7RS4EV0YV0"
-  };
-
-  // 3. Inisialisasi
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-
-  // 4. Fungsi yang dijalankan saat tombol diklik
-  window.jalankanLogin = function() {
-    // Mengambil teks yang diketik oleh guru
-    const emailGuru = document.getElementById("inputEmail").value;
-    const passwordGuru = document.getElementById("inputPassword").value;
-
-    // Cek jika kolom kosong
-    if (emailGuru === "" || passwordGuru === "") {
-      alert("Harap isi email dan password terlebih dahulu!");
-      return;
-    }
-
-    // Proses pencocokan ke Firebase Auth
-    signInWithEmailAndPassword(auth, emailGuru, passwordGuru)
-      .then((userCredential) => {
-        // Berhasil login
-        const user = userCredential.user;
-        console.log("Login berhasil!", user.email);
-        alert("Login Berhasil!");
-        
-        // Arahkan ke halaman dashboard guru
-        // PENTING: Ganti 'dashboard.html' jika nama file halaman utama Anda berbeda
-        window.location.href = "dashboard.html"; 
-      })
-      .catch((error) => {
-        // Gagal login
-        console.error("Gagal login:", error.message);
-        alert("Gagal masuk! Pastikan email dan kata sandi sudah benar serta terdaftar di Firebase.");
-      });
-  }
-</script>
+            <div id="form-login-guru" class="hidden text-left mt-2 animate-[fadeIn_0.3s_ease-in-out]">
+                <h2 class="text-lg font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <button onclick="backToLoginSelection()" class="text-gray-400 hover:text-indigo-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                    Login Wali Kelas
+                </h2>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-xs font-bold mb-2 uppercase tracking-wider">Email Guru</label>
+                    <input type="email" id="login_email_guru" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" placeholder="guru@sekolah.com">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-xs font-bold mb-2 uppercase tracking-wider">Password</label>
+                    <div class="relative">
+                        <input type="password" id="login_pass_guru" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" placeholder="••••••••">
+                        <button type="button" onclick="togglePassword('login_pass_guru')" class="absolute inset-y-0 right-0 px-4 flex items-center text-gray-400 hover:text-indigo-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                <button onclick="loginGuru()" id="btn-login-guru" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl transition shadow-md">Masuk Dashboard</button>
+            </div>
 
             <!-- Form Login Siswa -->
             <div id="form-login-siswa" class="hidden text-left mt-2 animate-[fadeIn_0.3s_ease-in-out]">
