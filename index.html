@@ -87,42 +87,118 @@
     </div>
 
     <!-- ===== DASHBOARD GURU ===== -->
-    <div id="guru-dashboard" class="hidden min-h-screen bg-gray-50 flex flex-col">
-        <nav class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center">
-            <h1 class="text-xl font-bold">EduWali - Panel Guru</h1>
-            <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg font-bold text-sm transition">Keluar</button>
-        </nav>
+    <div id="guru-dashboard" class="hidden min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
+        
+        <!-- Sidebar Overlay (Mobile) -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden" onclick="toggleSidebar()"></div>
 
-        <div class="p-6 max-w-7xl mx-auto w-full flex-grow">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                <h2 class="text-2xl font-bold text-gray-800">Manajemen Data Siswa</h2>
-                <div class="flex gap-2">
-                    <input type="file" id="excel_file" accept=".xlsx, .xls" class="hidden" onchange="handleExcelImport(event)">
-                    <button onclick="document.getElementById('excel_file').click()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow transition flex items-center">
-                        📄 Import Excel
-                    </button>
-                    <button onclick="openModalSiswaGuru()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow transition flex items-center">
-                        + Tambah Siswa Baru
-                    </button>
-                </div>
+        <!-- Sidebar Menu -->
+        <aside id="guru-sidebar" class="bg-white w-64 min-h-screen shadow-lg fixed md:relative z-30 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+            <div class="p-6 border-b flex justify-between items-center bg-blue-600 text-white md:bg-white md:text-blue-600">
+                <h2 class="text-2xl font-extrabold">EduWali</h2>
+                <button onclick="toggleSidebar()" class="md:hidden hover:text-gray-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
             </div>
+            <div class="flex-grow p-4 space-y-2">
+                <button onclick="switchGuruTab('beranda')" id="tab-beranda" class="w-full text-left px-4 py-3 rounded-lg font-semibold bg-blue-50 text-blue-700 transition flex items-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    Beranda
+                </button>
+                <button onclick="switchGuruTab('data-siswa')" id="tab-data-siswa" class="w-full text-left px-4 py-3 rounded-lg font-semibold text-gray-600 hover:bg-gray-100 transition flex items-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    Data Siswa
+                </button>
+            </div>
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full bg-red-50 text-red-600 hover:bg-red-100 font-bold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    Keluar
+                </button>
+            </div>
+        </aside>
 
-            <!-- Table Siswa -->
-            <div class="bg-white rounded-xl shadow overflow-hidden overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-100 border-b">
-                            <th class="p-4 font-semibold text-gray-600">NISN</th>
-                            <th class="p-4 font-semibold text-gray-600">Nama Siswa</th>
-                            <th class="p-4 font-semibold text-gray-600">Status</th>
-                            <th class="p-4 font-semibold text-gray-600">PIN Login</th>
-                            <th class="p-4 font-semibold text-gray-600 text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="guru-table-body" class="divide-y divide-gray-200">
-                        <!-- Data Siswa via JS -->
-                    </tbody>
-                </table>
+        <!-- Main Content Area -->
+        <div class="flex-grow flex flex-col w-full h-screen overflow-hidden">
+            <!-- Navbar -->
+            <nav class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center z-10 shrink-0">
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleSidebar()" class="md:hidden text-white hover:text-gray-200 focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                    <h1 class="text-xl font-bold" id="topbar-title">Beranda Guru</h1>
+                </div>
+                <div class="text-sm px-4 py-1.5 bg-blue-700 bg-opacity-50 rounded-full font-medium shadow-inner hidden sm:block">Admin Wali Kelas</div>
+            </nav>
+
+            <div class="p-6 w-full flex-grow overflow-y-auto">
+                <!-- Section Beranda -->
+                <div id="section-beranda" class="space-y-6 max-w-7xl mx-auto">
+                    <h2 class="text-2xl font-bold text-gray-800">Ringkasan Data</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow border-l-4 border-blue-500 flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm font-semibold uppercase">Total Siswa</p>
+                                <p class="text-3xl font-bold text-gray-800" id="stat-total">0</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full text-blue-600">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500 flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm font-semibold uppercase">Siswa Bimbingan</p>
+                                <p class="text-3xl font-bold text-gray-800" id="stat-bimbingan">0</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full text-green-600">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow border-l-4 border-purple-500 flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm font-semibold uppercase">Siswa Wali Kelas</p>
+                                <p class="text-3xl font-bold text-gray-800" id="stat-walikelas">0</p>
+                            </div>
+                            <div class="bg-purple-100 p-3 rounded-full text-purple-600">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Data Siswa -->
+                <div id="section-data-siswa" class="hidden flex-col h-full max-w-7xl mx-auto">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                        <h2 class="text-2xl font-bold text-gray-800">Manajemen Data Siswa</h2>
+                        <div class="flex flex-wrap gap-2">
+                            <input type="file" id="excel_file" accept=".xlsx, .xls" class="hidden" onchange="handleExcelImport(event)">
+                            <button onclick="document.getElementById('excel_file').click()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow transition flex items-center">
+                                📄 Import Excel
+                            </button>
+                            <button onclick="openModalSiswaGuru()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow transition flex items-center">
+                                + Tambah Siswa Baru
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Table Siswa -->
+                    <div class="bg-white rounded-xl shadow overflow-hidden overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 border-b">
+                                    <th class="p-4 font-semibold text-gray-600">NISN</th>
+                                    <th class="p-4 font-semibold text-gray-600">Nama Siswa</th>
+                                    <th class="p-4 font-semibold text-gray-600">Status</th>
+                                    <th class="p-4 font-semibold text-gray-600">PIN Login</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="guru-table-body" class="divide-y divide-gray-200">
+                                <!-- Data Siswa via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -301,7 +377,7 @@
         
         // Ganti dengan konfigurasi Firebase Anda sendiri
         const firebaseConfig = {
-            apiKey: "AIzaSyBzmqSgEL3a5bFSkRBUjGp-SZ4J3fk-ZwU",
+             apiKey: "AIzaSyBzmqSgEL3a5bFSkRBUjGp-SZ4J3fk-ZwU",
             authDomain: "eduwali.firebaseapp.com",
             projectId: "eduwali",
             storageBucket: "eduwali.firebasestorage.app",
@@ -384,6 +460,79 @@
             return Math.floor(100000 + Math.random() * 900000).toString();
         }
 
+        /* ==========================================
+           FITUR IDLE TIMEOUT (15 MENIT) & SIDEBAR MENU
+           ========================================== */
+        let idleTimeout;
+        const IDLE_TIME_MS = 15 * 60 * 1000; // 15 menit dalam milidetik
+
+        function resetIdleTimer() {
+            if (idleTimeout) clearTimeout(idleTimeout);
+            // Hanya jalankan timer jika ada sesi user aktif
+            if (currentUserRole) {
+                idleTimeout = setTimeout(logoutDueToIdle, IDLE_TIME_MS);
+            }
+        }
+
+        function logoutDueToIdle() {
+            if (currentUserRole) {
+                showToast("Sesi berakhir karena tidak ada aktivitas selama 15 menit.", "error");
+                logout();
+            }
+        }
+
+        // Listener untuk memantau interaksi (gerak mouse, ketik keyboard, scroll, sentuh)
+        function setupIdleListeners() {
+            ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll'].forEach(evt => {
+                document.addEventListener(evt, resetIdleTimer, true);
+            });
+        }
+
+        // --- Sidebar Menu Functions ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('guru-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function switchGuruTab(tabName) {
+            // Update Tampilan Tab Menu Aktif
+            const activeClass = "w-full text-left px-4 py-3 rounded-lg font-semibold bg-blue-50 text-blue-700 transition flex items-center gap-3";
+            const inactiveClass = "w-full text-left px-4 py-3 rounded-lg font-semibold text-gray-600 hover:bg-gray-100 transition flex items-center gap-3";
+            
+            document.getElementById('tab-beranda').className = tabName === 'beranda' ? activeClass : inactiveClass;
+            document.getElementById('tab-data-siswa').className = tabName === 'data-siswa' ? activeClass : inactiveClass;
+
+            // Update Visibilitas Konten Utama
+            document.getElementById('section-beranda').classList.toggle('hidden', tabName !== 'beranda');
+            document.getElementById('section-data-siswa').classList.toggle('hidden', tabName !== 'data-siswa');
+            
+            // Atur layout tabel agar menggunakan ruang penuh
+            if(tabName === 'data-siswa') {
+                document.getElementById('section-data-siswa').classList.add('flex');
+            } else {
+                document.getElementById('section-data-siswa').classList.remove('flex');
+            }
+
+            // Ganti Judul Topbar
+            document.getElementById('topbar-title').innerText = tabName === 'beranda' ? 'Beranda Guru' : 'Manajemen Data Siswa';
+
+            // Auto-close menu sidebar di layar kecil setelah tab diklik
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('guru-sidebar');
+                if (!sidebar.classList.contains('-translate-x-full')) {
+                    toggleSidebar();
+                }
+            }
+        }
+
         let currentUserRole = null; 
         let currentStudentDocId = null;
 
@@ -425,7 +574,9 @@
                 // Pindah Layar
                 document.getElementById('login-page').classList.add('hidden');
                 document.getElementById('guru-dashboard').classList.remove('hidden');
+                switchGuruTab('beranda'); // Atur menu default
                 loadDataToTable();
+                resetIdleTimer(); // Mulai hitung mundur 15 menit
                 showToast("Berhasil masuk sebagai Guru!");
                 
             } catch (error) {
@@ -462,6 +613,7 @@
                 
                 renderFormSiswa();
                 isiFormSiswaDariDB(docData.data());
+                resetIdleTimer(); // Mulai hitung mundur 15 menit
                 showToast("Berhasil masuk!");
             } catch (error) {
                 showToast("Error sistem: " + error.message, "error");
@@ -478,7 +630,9 @@
                     currentUserRole = 'guru';
                     document.getElementById('login-page').classList.add('hidden');
                     document.getElementById('guru-dashboard').classList.remove('hidden');
+                    switchGuruTab('beranda');
                     loadDataToTable();
+                    resetIdleTimer();
                 } else {
                     localStorage.removeItem('eduwali_role'); // Sesi invalid
                 }
@@ -495,6 +649,7 @@
                             
                             renderFormSiswa();
                             isiFormSiswaDariDB(doc.data());
+                            resetIdleTimer();
                         } else {
                             localStorage.removeItem('eduwali_role');
                             localStorage.removeItem('eduwali_siswa_id');
@@ -509,6 +664,7 @@
         function logout() {
             currentUserRole = null;
             currentStudentDocId = null;
+            if (idleTimeout) clearTimeout(idleTimeout); // Hentikan timer logout otomatis
             
             // Hapus sesi lokal
             localStorage.removeItem('eduwali_role');
@@ -547,15 +703,27 @@
                 const snapshot = await db.collection('siswa').orderBy('nama', 'asc').get();
                 tbody.innerHTML = '';
                 
+                let totalSiswa = 0;
+                let totalBimbingan = 0;
+                let totalWaliKelas = 0;
+
                 if(snapshot.empty) {
                     tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">Belum ada data siswa. Tambahkan atau Import dari Excel.</td></tr>';
+                    document.getElementById('stat-total').innerText = '0';
+                    document.getElementById('stat-bimbingan').innerText = '0';
+                    document.getElementById('stat-walikelas').innerText = '0';
                     return;
                 }
 
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     
+                    // Rekap data untuk Statistik di Beranda
+                    totalSiswa++;
                     let statusText = Array.isArray(data.status) ? data.status.join(', ') : (data.status || '-');
+                    if (statusText.includes('Bimbingan')) totalBimbingan++;
+                    if (statusText.includes('Wali Kelas')) totalWaliKelas++;
+
                     const statusHtml = statusText.includes('Wali Kelas') && statusText.includes('Bimbingan') 
                                         ? `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-bold">Keduanya</span>`
                                         : statusText.includes('Wali Kelas') 
@@ -577,57 +745,12 @@
                     `;
                     tbody.appendChild(tr);
                 });
-            } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
-            }
-        }
 
-        function openModalSiswaGuru() {
-            document.getElementById('guru_form_doc_id').value = '';
-            document.getElementById('guru_form_nisn').value = '';
-            document.getElementById('guru_form_nama').value = '';
-            document.getElementById('status_walikelas').checked = false;
-            document.getElementById('status_bimbingan').checked = false;
-            
-            document.getElementById('modal-guru-title').innerText = "Tambah Siswa Baru";
-            document.getElementById('modal-guru-siswa').classList.remove('hidden');
-        }
+                // Memperbarui UI Statistik Angka di Menu Beranda
+                document.getElementById('stat-total').innerText = totalSiswa;
+                document.getElementById('stat-bimbingan').innerText = totalBimbingan;
+                document.getElementById('stat-walikelas').innerText = totalWaliKelas;
 
-        function closeModalGuruSiswa() {
-            document.getElementById('modal-guru-siswa').classList.add('hidden');
-        }
-
-        async function saveSiswaByGuru() {
-            const docId = document.getElementById('guru_form_doc_id').value;
-            const nisn = document.getElementById('guru_form_nisn').value.trim();
-            const nama = document.getElementById('guru_form_nama').value.trim();
-            
-            let statusArr = [];
-            if(document.getElementById('status_walikelas').checked) statusArr.push('Wali Kelas');
-            if(document.getElementById('status_bimbingan').checked) statusArr.push('Bimbingan');
-
-            if(!nisn || !nama) { showToast("NISN dan Nama wajib diisi", "error"); return; }
-            if(statusArr.length === 0) { showToast("Pilih minimal satu status siswa", "error"); return; }
-
-            const pin = generatePIN();
-            const dataToSave = { 
-                nisn: nisn, 
-                nama: nama, 
-                status: statusArr,
-                pin: pin,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            try {
-                if(docId) {
-                    delete dataToSave.pin; 
-                    await db.collection('siswa').doc(docId).set(dataToSave, {merge:true});
-                } else {
-                    await db.collection('siswa').add(dataToSave);
-                }
-                showToast("Data siswa berhasil disimpan!");
-                closeModalGuruSiswa();
-                loadDataToTable();
             } catch (error) {
                 showToast("Error menyimpan: " + error.message, "error");
             }
@@ -939,7 +1062,10 @@
         }
 
         // Jalankan saat load
-        window.onload = initApp;
+        window.onload = function() {
+            initApp();
+            setupIdleListeners();
+        };
 
     </script>
 </body>
