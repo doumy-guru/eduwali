@@ -1280,24 +1280,43 @@
             });
         }
 async function loginGuru() {
-    // Mencari input berdasarkan atribut type-nya di HTML
+    // 1. Mencari elemen input (Berdasarkan logika sumber [1])
     const emailEl = document.querySelector('input[type="email"]') || document.querySelector('input[type="text"]');
     const passEl = document.querySelector('input[type="password"]');
 
-    if (!emailEl || !passEl) {
-        showToast("Kolom email atau password tidak ditemukan di form!", "error");
-        return;
-    }
-
-    const email = emailEl.value.trim();
+    // 2. Mengambil nilai dari input (Perbaikan dari kesalahan sebelumnya)
+    const email = emailEl.value;
     const password = passEl.value;
 
     if (!email || !password) {
-        showToast("Email dan password wajib diisi!", "error");
+        alert("Silakan isi email dan password");
         return;
     }
 
-    // ... (sisa kode login lanjutan tetap sama)
+    try {
+        // Tampilkan loading (Jika ada elemennya)
+        if(document.getElementById('app-loading')) {
+            document.getElementById('app-loading').classList.remove('hidden');
+        }
+
+        // 3. Proses Autentikasi Firebase (Informasi luar sumber)
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // 4. Mengambil data tambahan dari Firestore (Opsional, agar dashboard punya data)
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+        const userData = docSnap.exists() ? docSnap.data() : { email: user.email };
+
+        // 5. Menjalankan fungsi setup dashboard (Berdasarkan sumber [1])
+        setupSiswaDashboard(user.uid, userData);
+
+    } catch (error) {
+        // Sembunyikan loading jika gagal
+        document.getElementById('app-loading').classList.add('hidden');
+        console.error("Login Error:", error.code, error.message);
+        alert("Gagal Login: " + error.message);
+    }
 }
         async function setupSiswaDashboard(id, data) {
             document.getElementById('app-loading').classList.add('hidden');
